@@ -1,0 +1,32 @@
+version: 2  # Version of CircleCI
+jobs:
+  build:
+    docker:
+      - image: python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Run unit tests
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - run:
+        # installs a docker client that will be used to run the docker commands
+          name: Install Docker client
+          command: |
+            set -x
+            VER="17.03.0-ce"
+            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
+            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
+            mv /tmp/docker/* /usr/bin
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: docker build -t anuragreddys/bloodbank:v1 .
+
+      - run:
+          name: Push to Docker Hub
+          command: |
+            docker login -u anuragreddys -p Mlpokn@911
+            docker push anuragreddys/bloodbank:v1
